@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
 
 export default function Home() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Track logged in user status (null means logged out)
   const [user, setUser] = useState<string | null>(null);
@@ -11,6 +13,7 @@ export default function Home() {
   // Function called when a user logs in successfully (via Email, Google, or Guest)
   const handleLoginSuccess = (userIdentifier: string) => {
     setUser(userIdentifier);
+      router.push("/dashboard"); // <-- This pushes the user to the dashboard screen!
   };
 
   // Function called when a user logs out

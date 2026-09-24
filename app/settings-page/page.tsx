@@ -15,11 +15,11 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const guest = localStorage.getItem("summarist_guest");
-      const premiumToken = localStorage.getItem("summarist_premium") === "true";
+    const premiumToken = localStorage.getItem("summarist_premium") === "true";
 
-      if (premiumToken) {
-    setIsPremium(true);
-  }
+    if (premiumToken) {
+      setIsPremium(true);
+    }
 
     if (guest) {
       setUserName(guest);
@@ -42,12 +42,6 @@ export default function SettingsPage() {
     return () => unsubscribe();
   }, [router]);
 
-  const handleLogout = async () => {
-    localStorage.removeItem("summarist_guest");
-    await signOut(auth);
-    router.push("/");
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -58,40 +52,8 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* SIDEBAR NAVIGATION */}
-
-      {/* Reusable Sidebar Component Wrapper */}
-        <Sidebar />
-
-      {/* 
-        Replacing the old settings sidebar markup with the new reusable Sidebar component.
-        Keeping the old code below for reference:
-
-        <aside className="w-64 bg-[#032b41] text-white flex flex-col justify-between p-6 hidden md:flex">
-          <div className="space-y-8">
-            <div className="text-2xl font-black tracking-tight">Summarist<span className="text-[#11d683]">.</span></div>
-            <nav className="space-y-4">
-              <button onClick={() => router.push("/for-you")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">📖 For You</button>
-              <button onClick={() => router.push("/my-library")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">🔖 My Library</button>
-              <button className="w-full text-left bg-[#043854] text-[#11d683] px-4 py-3 rounded-lg font-bold transition">⚙️ Settings</button>
-            </nav>
-          </div>
-          <button onClick={handleLogout} className="w-full bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30 font-semibold py-3 rounded-lg transition duration-200">Logout</button>
-        </aside>
-      */}
-
-   
-  
-  {/* NEW BUTTON FOR YOUR PRICING SALES PAGE */}
-  <button onClick={() => router.push("/choose-plan")} className="w-full text-left border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-[#032b41] px-4 py-3 rounded-lg font-bold transition">
-    ✨ Upgrade Plan
-  </button>
-</nav>
-
-          </nav>
-        </div>
-        <button onClick={handleLogout} className="w-full bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30 font-semibold py-3 rounded-lg transition duration-200">Logout</button>
-      </aside>
+      {/* SIDEBAR NAVIGATION - Handled perfectly by our unified component */}
+      <Sidebar />
 
       {/* MAIN SETTINGS INTERFACE */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
@@ -114,7 +76,10 @@ export default function SettingsPage() {
                 </p>
               </div>
               {!isPremium && (
-                <button className="bg-[#11d683] hover:bg-[#0fbe74] text-[#032b41] text-sm font-bold px-5 py-2.5 rounded-xl shadow-md transition">
+                <button 
+                  onClick={() => router.push("/choose-plan")}
+                  className="bg-[#11d683] hover:bg-[#0fbe74] text-[#032b41] text-sm font-bold px-5 py-2.5 rounded-xl shadow-md transition"
+                >
                   Upgrade to Premium
                 </button>
               )}

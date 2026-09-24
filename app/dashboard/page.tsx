@@ -1,5 +1,6 @@
 "use client";
 
+import Sidebar from "@/components/Sidebar";
 import React, { useState, useEffect } from "react";
 import { auth } from "@/app/firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
@@ -78,17 +79,31 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* SIDEBAR NAVIGATION */}
-      <aside className="w-64 bg-[#032b41] text-white flex flex-col justify-between p-6 hidden md:flex">
-        <div className="space-y-8">
-          <div className="text-2xl font-black tracking-tight">Summarist<span className="text-[#11d683]">.</span></div>
-          <nav className="space-y-4">
-            <button className="w-full text-left bg-[#043854] text-[#11d683] px-4 py-3 rounded-lg font-bold transition">📖 For You</button>
-            <button onClick={() => router.push("/my-library")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">🔖 My Library</button>
-            <button onClick={() => router.push("/settings")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">⚙️ Settings</button>
-          </nav>
-        </div>
-        <button onClick={handleLogout} className="w-full bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30 font-semibold py-3 rounded-lg transition duration-200">Logout</button>
-      </aside>
+
+      {/* 1. Reusable Sidebar Component Wrapper */}
+      <Sidebar />
+
+      {/* 
+        Replacing the old sidebar markup with the new Sidebar component.
+        Keeping the old code below for reference:
+        
+        <aside className="w-64 bg-[#032b41] text-white flex flex-col justify-between p-6 hidden md:flex">
+          <div className="space-y-8">
+            <div className="text-2xl font-black tracking-tight">Summarist<span className="text-[#11d683]">.</span></div>
+            <nav className="space-y-4">
+              <button className="w-full text-left bg-[#043854] text-[#11d683] px-4 py-3 rounded-lg font-bold transition">📖 For You</button>
+              <button onClick={() => router.push("/my-library")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">🔖 My Library</button>
+              <button onClick={() => router.push("/settings")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">⚙️ Settings</button>
+            </nav>
+          </div>
+          <button onClick={handleLogout} className="w-full bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30 font-semibold py-3 rounded-lg transition duration-200">Logout</button>
+        </aside> 
+      */}
+
+    
+
+
+      
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">

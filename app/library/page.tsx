@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
-import Sidebar from "@/components/Sidebar";
 
 const MOCK_BOOKS = [
   { id: 1, title: "Atomic Habits", author: "James Clear", duration: "12 min", rating: "4.8", category: "Productivity" },

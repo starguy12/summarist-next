@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -12,27 +14,37 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+
 
   if (!isOpen) return null;
 
-  // Handle standard Email/Password Login
+    // Handle standard Email/Password Login
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onLoginSuccess(email || "user@example.com");
     onClose();
+    router.push("/for-you"); // <-- Automatically redirects to the new route!
   };
 
   // Handle Google Login
   const handleGoogleLogin = () => {
     onLoginSuccess("Google User");
     onClose();
+    router.push("/for-you"); // <-- Automatically redirects to the new route!
   };
 
-  // Handle Guest Login
+    // Handle Guest Login
   const handleGuestLogin = () => {
+    // Save the guest session locally so the dashboard route doesn't bounce you
+    localStorage.setItem("summarist_guest", "Guest User");
+    
     onLoginSuccess("Guest User");
     onClose();
+    router.push("/for-you");
   };
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">

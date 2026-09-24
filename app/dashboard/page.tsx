@@ -84,6 +84,7 @@ export default function DashboardPage() {
           <nav className="space-y-4">
             <button className="w-full text-left bg-[#043854] text-[#11d683] px-4 py-3 rounded-lg font-bold transition">📖 For You</button>
             <button onClick={() => router.push("/my-library")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">🔖 My Library</button>
+            <button onClick={() => router.push("/settings")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">⚙️ Settings</button>
           </nav>
         </div>
         <button onClick={handleLogout} className="w-full bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/30 font-semibold py-3 rounded-lg transition duration-200">Logout</button>

@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
           source: "/player/:id",
           destination: "/player", // Points to our new player template directory
         },
+        {
+          source: "/settings",
+          destination: "/settings-page", // Points to our new settings template directory
+        },
       ],
     };
   },

@@ -71,7 +71,7 @@ export default function MyLibraryPage() {
             {savedBooks.map((book) => (
               <div 
                 key={book.id} 
-                onClick={() => router.push(`/book/${book.id}`)}
+                onClick={() => router.push(`/player/${book.id}`)}
                 className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between cursor-pointer relative"
               >
                 <div>

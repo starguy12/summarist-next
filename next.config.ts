@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
           source: "/book/:id",
           destination: "/book", // Points to an internal dynamic renderer folder
         },
+        {
+          source: "/player/:id",
+          destination: "/player", // Points to our new player template directory
+        },
       ],
     };
   },

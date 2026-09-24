@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
           source: "/settings",
           destination: "/settings-page", // Points to our new settings template directory
         },
+        {
+          source: "/choose-plan",
+          destination: "/pricing-page", // Points to our new pricing directory
+        },
       ],
     };
   },

@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
           destination: "/dashboard",
         },
         {
+          source: "/my-library",
+          destination: "/library", // Points to our new library folder
+        },
+        {
           source: "/book/:id",
           destination: "/book", // Points to an internal dynamic renderer folder
         },

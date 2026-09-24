@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { auth } from "@/app/firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import SkeletonCard from "@/components/SkeletonCard";
+
 
 const MOCK_BOOKS = [
   { id: 1, title: "Atomic Habits", author: "James Clear", duration: "12 min", rating: "4.8", category: "Productivity" },
@@ -68,14 +70,7 @@ export default function DashboardPage() {
     book.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#032b41]"></div>
-      </div>
-    );
-  }
-
+ 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* SIDEBAR NAVIGATION */}
@@ -118,38 +113,48 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <h3 className="text-lg font-bold text-[#032b41] mb-6">{searchQuery ? `Search Results (${filteredBooks.length})` : "Recommended Summaries"}</h3>
+                <h3 className="text-lg font-bold text-[#032b41] mb-6">
+          {loading ? "Loading recommendations..." : searchQuery ? `Search Results (${filteredBooks.length})` : "Recommended Summaries"}
+        </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBooks.map((book) => (
-            <div 
-              key={book.id} 
-              onClick={() => router.push(`/book/${book.id}`)}
-              className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between cursor-pointer transform hover:-translate-y-0.5"
-            >
-              <div>
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full mb-3 inline-block">{book.category}</span>
-                  {/* INTERACTIVE FAVORITE TRIGGER ICON */}
-                  <button 
-                    onClick={(e) => toggleFavorite(book.id, e)} 
-                    className="text-xl p-1 -mt-1 hover:scale-110 transition duration-150"
-                    title={favorites.includes(book.id) ? "Remove from Library" : "Bookmark to Library"}
-                  >
-                    {favorites.includes(book.id) ? "🔖" : "🫥"}
-                  </button>
+          {loading ? (
+            /* Show 6 pulsing skeletons while page is loading */
+            Array.from({ length: 6 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))
+          ) : (
+            /* Render real book data when loading is finished */
+            filteredBooks.map((book) => (
+              <div 
+                key={book.id} 
+                onClick={() => router.push(`/book/${book.id}`)}
+                className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between cursor-pointer transform hover:-translate-y-0.5"
+              >
+                <div>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full mb-3 inline-block">{book.category}</span>
+                    <button 
+                      onClick={(e) => toggleFavorite(book.id, e)} 
+                      className="text-xl p-1 -mt-1 hover:scale-110 transition duration-150"
+                      title={favorites.includes(book.id) ? "Remove from Library" : "Bookmark to Library"}
+                    >
+                      {favorites.includes(book.id) ? "🔖" : "🫥"}
+                    </button>
+                  </div>
+                  <h4 className="font-black text-lg text-[#032b41] leading-snug">{book.title}</h4>
+                  <p className="text-sm text-gray-500 mt-1">{book.author}</p>
                 </div>
-                <h4 className="font-black text-lg text-[#032b41] leading-snug">{book.title}</h4>
-                <p className="text-sm text-gray-500 mt-1">{book.author}</p>
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500 font-medium">
+                  <div>⏱️ {book.duration}</div>
+                  <div className="text-amber-500">⭐ <span className="text-gray-700 font-bold">{book.rating}</span></div>
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500 font-medium">
-                <div>⏱️ {book.duration}</div>
-                <div className="text-amber-500">⭐ <span className="text-gray-700 font-bold">{book.rating}</span></div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </main>
     </div>
   );
 }
+

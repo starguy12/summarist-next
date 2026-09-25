@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const BOOK_DATABASE: Record<string, { title: string; author: string; summary: string }> = {
@@ -22,16 +22,14 @@ const BOOK_DATABASE: Record<string, { title: string; author: string; summary: st
 };
 
 export default function PlayerPage() {
-  const [bookId, setBookId] = useState<string | null>(null);
+  const [bookId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const pathSegments = window.location.pathname.split("/");
+    return pathSegments[pathSegments.length - 1] || null;
+  });
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(30); // Mock starting percentage
   const router = useRouter();
-
-  useEffect(() => {
-    const pathSegments = window.location.pathname.split("/");
-    const id = pathSegments[pathSegments.length - 1];
-    setBookId(id);
-  }, []);
 
   const book = bookId ? BOOK_DATABASE[bookId] : null;
 
@@ -50,8 +48,8 @@ export default function PlayerPage() {
     <div className="min-h-screen bg-white flex flex-col justify-between text-gray-800">
       {/* MAIN TEXT SCROLLABLE REGION */}
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10 overflow-y-auto pb-32">
-        <button 
-          onClick={() => router.push("/for-you")} 
+        <button
+          onClick={() => router.push("/for-you")}
           className="text-sm font-bold text-gray-500 hover:text-[#032b41] transition mb-8 inline-block"
         >
           &larr; Back to Dashboard
@@ -81,7 +79,7 @@ export default function PlayerPage() {
           {/* Interactive Audio Controls */}
           <div className="flex items-center gap-6">
             <button className="text-xl text-gray-400 hover:text-white transition">⏮️</button>
-            <button 
+            <button
               onClick={() => setIsPlaying(!isPlaying)}
               className="w-12 h-12 rounded-full bg-[#11d683] text-[#032b41] text-xl font-bold flex items-center justify-center shadow-md hover:scale-105 transition transform active:scale-95"
             >
@@ -93,10 +91,10 @@ export default function PlayerPage() {
           {/* Audio Slider Control Rail */}
           <div className="w-full sm:w-64 flex items-center gap-3 text-xs font-mono text-gray-300">
             <span>0:45</span>
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
+            <input
+              type="range"
+              min="0"
+              max="100"
               value={progress}
               onChange={(e) => setProgress(Number(e.target.value))}
               className="flex-1 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#11d683]"

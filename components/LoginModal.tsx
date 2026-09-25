@@ -43,7 +43,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         setErrorMsg("Short password! Your credentials must be at least 6 characters long.");
         return;
       }
-      
+
       // Simulate successful registration by adding credentials locally
       DUMMY_REGISTERED_USERS.push({ email, password });
       alert("Account created successfully! Switching to Login view.");
@@ -55,7 +55,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
     // 3. LOGIN VALIDATIONS
     if (authMode === "login") {
       const foundUser = DUMMY_REGISTERED_USERS.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      
+
       if (!foundUser) {
         setErrorMsg("User not found! This email is not registered in our database.");
         return;
@@ -100,10 +100,10 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl transition-all border border-gray-100">
-        
+
         {/* Close Button */}
         <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
-        
+
         {/* Dynamic Title Header */}
         <div className="text-center mb-6">
           <h2 className="text-2xl font-black text-[#032b41]">
@@ -142,24 +142,24 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Email Address</label>
-            <input 
-              type="text" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              placeholder="example@mail.com" 
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black text-sm transition" 
-              required 
+            <input
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@mail.com"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black text-sm transition"
+              required
             />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Password</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              placeholder="••••••••" 
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black text-sm transition" 
-              required 
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black text-sm transition"
+              required
             />
           </div>
           <button type="submit" className="w-full bg-[#032b41] hover:bg-[#043854] text-white font-bold py-3 rounded-lg shadow-md transition duration-200 text-sm">
@@ -178,7 +178,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         {/* MODE TOGGLES */}
         <div className="mt-6 text-center text-sm text-gray-500">
           {authMode === "login" ? (
-            <div>Don't have an account? <button onClick={() => { setAuthMode("signup"); setErrorMsg(null); }} className="hover:underline text-blue-600 font-bold">Sign up</button></div>
+            <div>Don&apos;t have an account? <button onClick={() => { setAuthMode("signup"); setErrorMsg(null); }} className="hover:underline text-blue-600 font-bold">Sign up</button></div>
           ) : (
             <div>Already have an account? <button onClick={() => { setAuthMode("login"); setErrorMsg(null); }} className="hover:underline text-blue-600 font-bold">Log in</button></div>
           )}

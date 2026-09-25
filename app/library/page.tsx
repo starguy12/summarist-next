@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 
@@ -14,16 +14,17 @@ const MOCK_BOOKS = [
 ];
 
 export default function MyLibraryPage() {
-  const [savedIds, setSavedIds] = useState<number[]>([]);
-  const router = useRouter();
+  const [savedIds, setSavedIds] = useState<number[]>(() => {
+    if (typeof window === "undefined") return [];
 
-  // Load favorites from local storage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("summarist_favorites");
-    if (saved) {
-      setSavedIds(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem("summarist_favorites");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
-  }, []);
+  });
+  const router = useRouter();
 
   // Filter out only the books that have been saved by the user
   const savedBooks = MOCK_BOOKS.filter((book) => savedIds.includes(book.id));
@@ -38,25 +39,7 @@ export default function MyLibraryPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* SIDEBAR NAVIGATION */}
-            {/* Reusable Sidebar Component Wrapper */}
-        <Sidebar />
-
-      {/* 
-        Replacing the old library sidebar markup with the new reusable Sidebar component.
-        Keeping the old code below for reference:
-
-        <aside className="w-64 bg-[#032b41] text-white flex flex-col justify-between p-6 hidden md:flex">
-          <div className="space-y-8">
-            <div className="text-2xl font-black tracking-tight">Summarist<span className="text-[#11d683]">.</span></div>
-            <nav className="space-y-4">
-              <button onClick={() => router.push("/for-you")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">📖 For You</button>
-              <button className="w-full text-left bg-[#043854] text-[#11d683] px-4 py-3 rounded-lg font-bold transition">🔖 My Library</button>
-              <button onClick={() => router.push("/settings")} className="w-full text-left hover:bg-[#043854] text-gray-300 hover:text-white px-4 py-3 rounded-lg font-medium transition">⚙️ Settings</button>
-            </nav>
-          </div>
-        </aside>
-      */}
-
+      <Sidebar />
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
@@ -80,15 +63,15 @@ export default function MyLibraryPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {savedBooks.map((book) => (
-              <div 
-                key={book.id} 
+              <div
+                key={book.id}
                 onClick={() => router.push(`/player/${book.id}`)}
                 className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between cursor-pointer relative"
               >
                 <div>
                   <div className="flex justify-between items-start gap-2">
                     <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full mb-3 inline-block">{book.category}</span>
-                    <button 
+                    <button
                       onClick={(e) => handleRemoveFavorite(book.id, e)}
                       className="text-gray-400 hover:text-red-500 font-bold transition text-sm p-1"
                       title="Remove from favorites"

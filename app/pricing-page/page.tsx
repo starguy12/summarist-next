@@ -29,8 +29,8 @@ export default function PricingPage() {
           <span className="text-5xl block animate-bounce">✨</span>
           <h2 className="text-2xl font-black text-[#032b41]">Payment Successful!</h2>
           <p className="text-gray-600 text-sm">Welcome to Summarist Premium. Your account has been upgraded successfully.</p>
-          <button 
-            onClick={() => router.push("/for-you")} 
+          <button
+            onClick={() => router.push("/for-you")}
             className="w-full bg-[#11d683] hover:bg-[#0fbe74] text-[#032b41] font-bold py-3 rounded-xl shadow-md transition duration-150"
           >
             Start Exploring Summaries
@@ -56,14 +56,14 @@ export default function PricingPage() {
 
       {/* CORE SALES GRID */}
       <main className="max-w-4xl mx-auto px-6 mt-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        
+
         {/* LEFT COLUMN: PLAN CHOOOSER & FAQS */}
         <div className="space-y-8">
           <h2 className="text-xl font-black text-[#032b41]">Choose the plan that fits you</h2>
-          
+
           <div className="space-y-4">
             {/* Yearly Card */}
-            <div 
+            <div
               onClick={() => setSelectedPlan("yearly")}
               className={`p-5 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between ${selectedPlan === "yearly" ? "border-[#11d683] bg-green-50/30" : "border-gray-200 bg-white"}`}
             >
@@ -78,7 +78,7 @@ export default function PricingPage() {
             </div>
 
             {/* Monthly Card */}
-            <div 
+            <div
               onClick={() => setSelectedPlan("monthly")}
               className={`p-5 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between ${selectedPlan === "monthly" ? "border-[#11d683] bg-green-50/30" : "border-gray-200 bg-white"}`}
             >
@@ -97,8 +97,8 @@ export default function PricingPage() {
           <div className="space-y-4 pt-4 border-t border-gray-100">
             <h4 className="font-bold text-sm text-[#032b41]">Frequently Asked Questions</h4>
             <div className="text-xs space-y-3 text-gray-600 leading-relaxed">
-              <p><strong>How does the trial work?</strong> Begin your complimentary 7-day trial with an annual plan. Cancel anytime before it ends and you won't be charged.</p>
-              <p><strong>What's included?</strong> Unrestricted entry to best-selling book insights, high-quality audio formats, and full offline downloads.</p>
+              <p><strong>How does the trial work?</strong> Begin your complimentary 7-day trial with an annual plan. Cancel anytime before it ends and you won&apos;t be charged.</p>
+              <p><strong>What&apos;s included?</strong> Unrestricted entry to best-selling book insights, high-quality audio formats, and full offline downloads.</p>
             </div>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={isProcessing}
               className="w-full mt-4 bg-[#032b41] hover:bg-[#043854] text-white font-bold py-3.5 rounded-xl shadow-md transition duration-150 disabled:opacity-50 text-sm"

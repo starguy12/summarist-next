@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
 
@@ -13,7 +13,7 @@ export default function Home() {
   // Function called when a user logs in successfully (via Email, Google, or Guest)
   const handleLoginSuccess = (userIdentifier: string) => {
     setUser(userIdentifier);
-      router.push("/dashboard"); // <-- This pushes the user to the dashboard screen!
+    router.push("/dashboard"); // <-- This pushes the user to the dashboard screen!
   };
 
   // Function called when a user logs out
@@ -33,12 +33,12 @@ export default function Home() {
           <div className="hidden md:flex items-center space-x-8 font-medium text-gray-600">
             <a href="#about" className="hover:text-[#032b41] transition">About</a>
             <a href="#contact" className="hover:text-[#032b41] transition">Contact</a>
-            
+
             {/* 3. CONDITIONAL LOGIN/LOGOUT NAVBAR BUTTON */}
             {user ? (
               <div className="flex items-center gap-4">
                 <span className="text-sm font-semibold text-gray-500">Hi, {user}</span>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="bg-red-500 text-white px-5 py-2.5 rounded-lg hover:bg-red-600 font-semibold transition"
                 >
@@ -46,7 +46,7 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <button 
+              <button
                 onClick={() => setIsModalOpen(true)}
                 className="bg-[#032b41] text-white px-5 py-2.5 rounded-lg hover:bg-opacity-90 font-semibold transition"
               >
@@ -67,9 +67,9 @@ export default function Home() {
           <span className="text-[#11d683]">{user ? user : "busy people"}</span>
         </h1>
         <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Designed for individuals who barely have time to read, and even people who don't like to read. Save time by getting the core ideas from the best books.
+          Designed for individuals who barely have time to read, and even people who do not like to read. Save time by getting the core ideas from the best books.
         </p>
-        
+
         {!user && (
           <button
             onClick={() => setIsModalOpen(true)}
@@ -81,9 +81,9 @@ export default function Home() {
       </header>
 
       {/* DYNAMIC MODAL CONTAINER */}
-      <LoginModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <LoginModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
     </main>

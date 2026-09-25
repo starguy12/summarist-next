@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Expanded database containing summaries
@@ -23,15 +23,12 @@ const BOOK_DATABASE: Record<string, { title: string; author: string; summary: st
 };
 
 export default function BookSummaryPage() {
-  const [bookId, setBookId] = useState<string | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    // Safely extract the ID directly from the browser window URL path
+  const [bookId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
     const pathSegments = window.location.pathname.split("/");
-    const id = pathSegments[pathSegments.length - 1];
-    setBookId(id);
-  }, []);
+    return pathSegments[pathSegments.length - 1] || null;
+  });
+  const router = useRouter();
 
   const book = bookId ? BOOK_DATABASE[bookId] : null;
 
@@ -52,7 +49,7 @@ export default function BookSummaryPage() {
         <button onClick={() => router.push("/for-you")} className="text-sm font-semibold text-gray-500 hover:text-[#032b41] transition mb-6 block">
           &larr; Back to Dashboard
         </button>
-        
+
         <header className="border-b border-gray-100 pb-6 mb-6">
           <h1 className="text-3xl font-black text-[#032b41] mb-2">{book.title}</h1>
           <p className="text-gray-500 font-medium">By {book.author}</p>

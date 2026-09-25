@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { auth } from "@/app/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -9,12 +10,23 @@ import SkeletonCard from "@/components/SkeletonCard";
 import { Book } from "@/components/types";
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("summarist_guest");
+  });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
 
-  // 3 Separate State Pools for our 3 APIs
+    try {
+      const savedFavs = localStorage.getItem("summarist_favorites");
+      return savedFavs ? JSON.parse(savedFavs) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]);
   const [suggestedBooks, setSuggestedBooks] = useState<Book[]>([]);
@@ -22,41 +34,28 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Session & Favorites Authentication Setup
-    const guest = localStorage.getItem("summarist_guest");
-    const savedFavs = localStorage.getItem("summarist_favorites");
-    if (savedFavs) setFavorites(JSON.parse(savedFavs));
-
-    if (guest) {
-      setUser(guest);
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser.displayName || firebaseUser.email);
-      } else if (!guest) {
-        router.push("/");
-      }
-    });
-
-    // 2. FETCH DATA FROM THE 3 DIFFERENT APIS
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        
         const [resSelected, resRecommended, resSuggested] = await Promise.all([
-          fetch("https://us-central1-summaristt.cloudfunctions.net/getBooks?status=selected"),
-          fetch("https://us-central1-summaristt.cloudfunctions.net/getBooks?status=recommended"),
-          fetch("https://us-central1-summaristt.cloudfunctions.net/getBooks?status=suggested")
+          fetch("/api/books?status=selected"),
+          fetch("/api/books?status=recommended"),
+          fetch("/api/books?status=suggested")
         ]);
 
-        const dataSelected: Book[] = await resSelected.json();
-        const dataRecommended: Book[] = await resRecommended.json();
-        const dataSuggested: Book[] = await resSuggested.json();
+        const dataSelected = await resSelected.json();
+        const dataRecommended = await resRecommended.json();
+        const dataSuggested = await resSuggested.json();
 
-        if (dataSelected && dataSelected.length > 0) setSelectedBook(dataSelected[0]);
-        setRecommendedBooks(dataRecommended);
-        setSuggestedBooks(dataSuggested);
+        const finalSelected = Array.isArray(dataSelected) ? dataSelected : dataSelected.books || [];
+        const finalRecommended = Array.isArray(dataRecommended) ? dataRecommended : dataRecommended.books || dataRecommended || [];
+        const finalSuggested = Array.isArray(dataSuggested) ? dataSuggested : dataSuggested.books || dataSuggested || [];
+
+        if (finalSelected.length > 0) {
+          setSelectedBook(finalSelected[0]);
+        }
+        setRecommendedBooks(Array.isArray(finalRecommended) ? finalRecommended : []);
+        setSuggestedBooks(Array.isArray(finalSuggested) ? finalSuggested : []);
       } catch (error) {
         console.error("API Fetch Failure Error:", error);
       } finally {
@@ -64,7 +63,22 @@ export default function DashboardPage() {
       }
     };
 
-    fetchAllData();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser.displayName || firebaseUser.email);
+        fetchAllData();
+        return;
+      }
+
+      const guest = typeof window !== "undefined" ? localStorage.getItem("summarist_guest") : null;
+      if (guest) {
+        setUser(guest);
+        fetchAllData();
+      } else {
+        router.push("/");
+      }
+    });
+
     return () => unsubscribe();
   }, [router]);
 
@@ -80,7 +94,6 @@ export default function DashboardPage() {
     localStorage.setItem("summarist_favorites", JSON.stringify(updated));
   };
 
-  // Combine recommendations and suggestions for search results filtering
   const allSearchableBooks = [...recommendedBooks, ...suggestedBooks];
   const filteredSearchBooks = allSearchableBooks.filter((book) =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,7 +105,6 @@ export default function DashboardPage() {
       <Sidebar />
 
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
-        {/* TOP SEARCH HEADER */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-gray-200 pb-5">
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-[#032b41]">For You</h1>
@@ -100,26 +112,41 @@ export default function DashboardPage() {
           </div>
           <div className="relative w-full md:w-80">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">🔍</span>
-            <input 
-              type="text" 
-              placeholder="Search by title or author..." 
-              value={searchQuery} 
-              onChange={(e) => setSearchQuery(e.target.value)} 
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black" 
+            <input
+              type="text"
+              placeholder="Search by title or author..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-black"
             />
           </div>
         </header>
 
-        {/* CONDITIONAL RENDER: SEARCH RESULT VIEW VS MAIN PORTAL DASHBOARD */}
         {searchQuery ? (
           <div>
             <h3 className="text-lg font-bold text-[#032b41] mb-6">Search Results ({filteredSearchBooks.length})</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredSearchBooks.map((book) => (
-                <div key={book.id} onClick={() => router.push(`/player/${book.id}`)} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between h-48">
-                  <div>
-                    <h4 className="font-black text-lg text-[#032b41] leading-snug">{book.title}</h4>
-                    <p className="text-sm text-gray-500 mt-1">{book.author}</p>
+                <div key={book.id} onClick={() => router.push(`/player/${book.id}`)} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition cursor-pointer flex gap-4 h-48">
+                  <div className="w-24 h-full relative flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-100">
+                    <Image
+                      src={book.imageLink}
+                      alt={book.title}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = "https://unsplash.com";
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col justify-between flex-1 min-w-0">
+                    <div>
+                      <h4 className="font-black text-base text-[#032b41] leading-snug line-clamp-2">{book.title}</h4>
+                      <p className="text-xs text-gray-500 mt-1 truncate">{book.author}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -127,7 +154,6 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-10">
-            {/* ROW 1: LIVE SELECTED HIGHLIGHT BANNER */}
             <div>
               <h3 className="text-lg font-bold text-[#032b41] mb-4">Selected Just For You</h3>
               {loading || !selectedBook ? (
@@ -151,7 +177,6 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* ROW 2: RECOMMENDED BOOKS APIS */}
             <div>
               <h3 className="text-lg font-bold text-[#032b41] mb-6">Recommended For You</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -159,26 +184,38 @@ export default function DashboardPage() {
                   Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
                 ) : (
                   recommendedBooks.map((book) => (
-                    <div 
-                      key={book.id} 
-                      onClick={() => router.push(`/player/${book.id}`)}
-                      className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col justify-between cursor-pointer h-48"
-                    >
-                      <div>
-                        <div className="flex justify-between items-start gap-2">
-                          <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full mb-3 inline-block">
-                            {book.tags && book.tags.length > 0 ? book.tags[0] : "Insight"}
-                          </span>
-                          <button onClick={(e) => toggleFavorite(book.id, e)} className="text-xl p-1 -mt-1 hover:scale-110 transition">
-                            {favorites.includes(book.id) ? "🔖" : "🫥"}
-                          </button>
-                        </div>
-                        <h4 className="font-black text-lg text-[#032b41] leading-snug line-clamp-1">{book.title}</h4>
-                        <p className="text-sm text-gray-500 mt-1">{book.author}</p>
+                    <div key={book.id} onClick={() => router.push(`/player/${book.id}`)} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition flex gap-4 cursor-pointer h-48 transform hover:-translate-y-0.5">
+                      <div className="w-24 h-full relative flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-100">
+                        <Image
+                          src={book.imageLink}
+                          alt={book.title}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "https://unsplash.com";
+                          }}
+                        />
                       </div>
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 font-medium">
-                        <div>⏱️ {book.keyIdeas} key ideas</div>
-                        <div className="text-amber-500">⭐ <span className="text-gray-700 font-bold">{book.averageRating}</span></div>
+                      <div className="flex flex-col justify-between flex-1 min-w-0">
+                        <div>
+                          <div className="flex justify-between items-start gap-2">
+                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block truncate">
+                              {book.tags && book.tags.length > 0 ? book.tags : "Insight"}
+                            </span>
+                            <button onClick={(e) => toggleFavorite(book.id, e)} className="text-xl p-0.5 -mt-1.5 hover:scale-110 transition">
+                              {favorites.includes(book.id) ? "🔖" : "🫥"}
+                            </button>
+                          </div>
+                          <h4 className="font-black text-base text-[#032b41] leading-snug line-clamp-2 mt-1">{book.title}</h4>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{book.author}</p>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-[10px] text-gray-500 font-medium">
+                          <div>⏱️ {book.keyIdeas} ideas</div>
+                          <div className="text-amber-500 font-bold">⭐ {book.averageRating}</div>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -186,7 +223,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ROW 3: SUGGESTED BOOKS APIS */}
             <div>
               <h3 className="text-lg font-bold text-[#032b41] mb-6">Suggested Books</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -194,26 +230,38 @@ export default function DashboardPage() {
                   Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
                 ) : (
                   suggestedBooks.map((book) => (
-                    <div 
-                      key={book.id} 
-                      onClick={() => router.push(`/player/${book.id}`)}
-                      className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col justify-between cursor-pointer h-48"
-                    >
-                      <div>
-                        <div className="flex justify-between items-start gap-2">
-                          <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full mb-3 inline-block">
-                            {book.tags && book.tags.length > 0 ? book.tags[0] : "Suggested"}
-                          </span>
-                          <button onClick={(e) => toggleFavorite(book.id, e)} className="text-xl p-1 -mt-1 hover:scale-110 transition">
-                            {favorites.includes(book.id) ? "🔖" : "🫥"}
-                          </button>
-                        </div>
-                        <h4 className="font-black text-lg text-[#032b41] leading-snug line-clamp-1">{book.title}</h4>
-                        <p className="text-sm text-gray-500 mt-1">{book.author}</p>
+                    <div key={book.id} onClick={() => router.push(`/player/${book.id}`)} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition flex gap-4 cursor-pointer h-48 transform hover:-translate-y-0.5">
+                      <div className="w-24 h-full relative flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-100">
+                        <Image
+                          src={book.imageLink}
+                          alt={book.title}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "https://unsplash.com";
+                          }}
+                        />
                       </div>
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 font-medium">
-                        <div>⏱️ {book.keyIdeas} key ideas</div>
-                        <div className="text-amber-500">⭐ <span className="text-gray-700 font-bold">{book.averageRating}</span></div>
+                      <div className="flex flex-col justify-between flex-1 min-w-0">
+                        <div>
+                          <div className="flex justify-between items-start gap-2">
+                            <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full inline-block truncate">
+                              {book.tags && book.tags.length > 0 ? book.tags : "Suggested"}
+                            </span>
+                            <button onClick={(e) => toggleFavorite(book.id, e)} className="text-xl p-0.5 -mt-1.5 hover:scale-110 transition">
+                              {favorites.includes(book.id) ? "🔖" : "🫥"}
+                            </button>
+                          </div>
+                          <h4 className="font-black text-base text-[#032b41] leading-snug line-clamp-2 mt-1">{book.title}</h4>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{book.author}</p>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-[10px] text-gray-500 font-medium">
+                          <div>⏱️ {book.keyIdeas} ideas</div>
+                          <div className="text-amber-500 font-bold">⭐ {book.averageRating}</div>
+                        </div>
                       </div>
                     </div>
                   ))

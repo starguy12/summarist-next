@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    unoptimized: true,
+  },
+    // I'm keeping my existing routing rewrites intact
   async rewrites() {
     return {
       beforeFiles: [
@@ -33,4 +37,5 @@ const nextConfig: NextConfig = {
   },
 };
 
+ 
 export default nextConfig;

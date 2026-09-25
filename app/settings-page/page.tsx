@@ -2,29 +2,34 @@
 
 import React, { useState, useEffect } from "react";
 import { auth } from "@/app/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 
 export default function SettingsPage() {
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [isPremium, setIsPremium] = useState(false); // Mock subscription status
-  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const guest = localStorage.getItem("summarist_guest");
+    return guest ? "guest@summarist.com" : null;
+  });
+  const [userName, setUserName] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("summarist_guest");
+  });
+  const [isPremium, setIsPremium] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("summarist_premium") === "true";
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("summarist_guest") === null;
+  });
   const router = useRouter();
 
   useEffect(() => {
-    const guest = localStorage.getItem("summarist_guest");
-    const premiumToken = localStorage.getItem("summarist_premium") === "true";
-
-    if (premiumToken) {
-      setIsPremium(true);
-    }
+    const guest = typeof window !== "undefined" ? localStorage.getItem("summarist_guest") : null;
 
     if (guest) {
-      setUserName(guest);
-      setUserEmail("guest@summarist.com");
-      setLoading(false);
       return;
     }
 
@@ -32,7 +37,7 @@ export default function SettingsPage() {
       if (firebaseUser) {
         setUserName(firebaseUser.displayName || "Summarist Member");
         setUserEmail(firebaseUser.email);
-        setIsPremium(true); // Mocking real logged-in users as premium
+        setIsPremium(true);
         setLoading(false);
       } else {
         router.push("/");
@@ -76,7 +81,7 @@ export default function SettingsPage() {
                 </p>
               </div>
               {!isPremium && (
-                <button 
+                <button
                   onClick={() => router.push("/choose-plan")}
                   className="bg-[#11d683] hover:bg-[#0fbe74] text-[#032b41] text-sm font-bold px-5 py-2.5 rounded-xl shadow-md transition"
                 >
@@ -89,7 +94,7 @@ export default function SettingsPage() {
           {/* User Details Account Card */}
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
             <h3 className="text-lg font-bold text-[#032b41] border-b border-gray-100 pb-2">Account Details</h3>
-            
+
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">User Name</label>
               <p className="text-base font-semibold text-gray-800 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100">{userName}</p>

@@ -3,25 +3,25 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   
-  // Extract all potential frontend query parameters
+  // Extracting all potential frontend query parameters
   const status = searchParams.get("status");
   const id = searchParams.get("id");
   const search = searchParams.get("search");
 
-  // Define your base live Google Cloud Function domain
-  const BASE_URL = "https://cloudfunctions.net";
+  // This is the URL used in the project
+  const BASE_URL = "https://us-central1-summaristt.cloudfunctions.net";
   let apiUrl = "";
 
   try {
-    // 1. Check for Book ID Configuration (https://.../getBook?id=\${id})
+    // 1. Checking for Book ID Configuration (https://.../getBook?id=\${id})
     if (id) {
       apiUrl = `${BASE_URL}/getBook?id=${id}`;
     } 
-    // 2. Check for Search Configuration (https://.../getBooksByAuthorOrTitle?search=\${search})
+    // 2. Checking for Search Configuration (https://.../getBooksByAuthorOrTitle?search=\${search})
     else if (search) {
       apiUrl = `${BASE_URL}/getBooksByAuthorOrTitle?search=${encodeURIComponent(search)}`;
     } 
-    // 3. Check for Rows Configuration (selected, recommended, suggested)
+    // 3. Checking for Rows Configuration (selected, recommended, suggested)
     else if (status) {
       apiUrl = `${BASE_URL}/getBooks?status=${status}`;
     } 
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       apiUrl = `${BASE_URL}/getBooks?status=recommended`;
     }
 
-    // Execute the configured fetch call
+    // Executing the configured fetch call
     const response = await fetch(apiUrl, { 
       method: "GET",
       headers: { "Content-Type": "application/json" }

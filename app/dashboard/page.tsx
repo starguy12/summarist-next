@@ -10,22 +10,10 @@ import SkeletonCard from "@/components/SkeletonCard";
 import { Book } from "@/components/types";
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("summarist_guest");
-  });
+  const [user, setUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-
-    try {
-      const savedFavs = localStorage.getItem("summarist_favorites");
-      return savedFavs ? JSON.parse(savedFavs) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]);
@@ -64,6 +52,18 @@ export default function DashboardPage() {
     };
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      const savedFavs = localStorage.getItem("summarist_favorites");
+      if (savedFavs) {
+        try {
+          const parsedFavorites = JSON.parse(savedFavs);
+          if (Array.isArray(parsedFavorites)) {
+            setFavorites(parsedFavorites);
+          }
+        } catch {
+          // Ignore malformed saved favorites.
+        }
+      }
+
       if (firebaseUser) {
         setUser(firebaseUser.displayName || firebaseUser.email);
         fetchAllData();
@@ -135,11 +135,6 @@ export default function DashboardPage() {
                       fill
                       sizes="96px"
                       className="object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = "https://unsplash.com";
-                      }}
                     />
                   </div>
                   <div className="flex flex-col justify-between flex-1 min-w-0">
@@ -192,11 +187,6 @@ export default function DashboardPage() {
                           fill
                           sizes="96px"
                           className="object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = "https://unsplash.com";
-                          }}
                         />
                       </div>
                       <div className="flex flex-col justify-between flex-1 min-w-0">
@@ -238,11 +228,6 @@ export default function DashboardPage() {
                           fill
                           sizes="96px"
                           className="object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = "https://unsplash.com";
-                          }}
                         />
                       </div>
                       <div className="flex flex-col justify-between flex-1 min-w-0">

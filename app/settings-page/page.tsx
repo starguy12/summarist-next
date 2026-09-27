@@ -7,33 +7,24 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 
 export default function SettingsPage() {
-  const [userEmail, setUserEmail] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    const guest = localStorage.getItem("summarist_guest");
-    return guest ? "guest@summarist.com" : null;
-  });
-  const [userName, setUserName] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("summarist_guest");
-  });
-  const [isPremium, setIsPremium] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("summarist_premium") === "true";
-  });
-  const [loading, setLoading] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    return localStorage.getItem("summarist_guest") === null;
-  });
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const guest = typeof window !== "undefined" ? localStorage.getItem("summarist_guest") : null;
-
-    if (guest) {
-      return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      const guest = localStorage.getItem("summarist_guest");
+
+      if (guest) {
+        setUserName(guest);
+        setUserEmail("guest@summarist.com");
+        setIsPremium(localStorage.getItem("summarist_premium") === "true");
+        setLoading(false);
+        return;
+      }
+
       if (firebaseUser) {
         setUserName(firebaseUser.displayName || "Summarist Member");
         setUserEmail(firebaseUser.email);
@@ -57,7 +48,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* SIDEBAR NAVIGATION - Handled perfectly by our unified component */}
+      {/* SIDEBAR NAVIGATION - Handled perfectly by the  unified component */}
       <Sidebar />
 
       {/* MAIN SETTINGS INTERFACE */}

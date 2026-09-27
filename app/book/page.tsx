@@ -1,36 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-
-// Expanded database containing summaries
-const BOOK_DATABASE: Record<string, { title: string; author: string; summary: string }> = {
-  "1": {
-    title: "Atomic Habits",
-    author: "James Clear",
-    summary: "An atomic habit is a regular practice or routine that is not only small and easy to do but is also the source of incredible power. Bad habits repeat themselves again and again not because you don't want to change, but because you have the wrong system for change. To build better habits, use the Four Laws of Behavior Change: Make it obvious, make it attractive, make it easy, and make it satisfying."
-  },
-  "2": {
-    title: "The Lean Startup",
-    author: "Eric Ries",
-    summary: "Most startups fail. But many of those failures are preventable. The Lean Startup approach fosters companies that are both more capital efficient and that leverage human creativity more effectively. It is about launching a minimum viable product (MVP), measuring how customers respond, and learning whether to pivot or persevere."
-  },
-  "3": {
-    title: "Thinking, Fast and Slow",
-    author: "Daniel Kahneman",
-    summary: "Two systems drive the way we think. System 1 is fast, intuitive, and emotional; System 2 is slower, more deliberative, and more logical. Understanding how these two frameworks battle for control over our decisions can help us avoid cognitive biases and make better personal and professional choices."
-  }
-};
+import React, { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import type { Book } from "@/components/types";
 
 export default function BookSummaryPage() {
-  const [bookId] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    const pathSegments = window.location.pathname.split("/");
-    return pathSegments[pathSegments.length - 1] || null;
-  });
+  const pathname = usePathname();
+  const bookId = pathname.split("/").filter(Boolean).at(-1);
+  const [book, setBook] = useState<Pick<Book, "title" | "author" | "summary" | "subscriptionRequired"> | null>(null);
+  const [loading, setLoading] = useState(Boolean(bookId && bookId !== "book"));
   const router = useRouter();
 
-  const book = bookId ? BOOK_DATABASE[bookId] : null;
+  useEffect(() => {
+    if (!bookId || bookId === "book") {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const fetchBook = async () => {
+      try {
+        const response = await fetch(`/api/books?id=${encodeURIComponent(bookId)}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error("Book details could not be loaded");
+        }
+
+        const data = await response.json();
+        const result = Array.isArray(data) ? data[0] : data.book ?? data;
+        if (result?.title && result?.summary) {
+          setBook(result);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Book details fetch failed:", error);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchBook();
+    return () => controller.abort();
+  }, [bookId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <p className="text-gray-600">Loading book summary...</p>
+      </div>
+    );
+  }
 
   if (!book) {
     return (
@@ -51,8 +74,17 @@ export default function BookSummaryPage() {
         </button>
 
         <header className="border-b border-gray-100 pb-6 mb-6">
-          <h1 className="text-3xl font-black text-[#032b41] mb-2">{book.title}</h1>
-          <p className="text-gray-500 font-medium">By {book.author}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-[#032b41] mb-2">{book.title}</h1>
+              <p className="text-gray-500 font-medium">By {book.author}</p>
+            </div>
+            {book.subscriptionRequired && (
+              <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+                premium
+              </span>
+            )}
+          </div>
         </header>
 
         <article className="prose max-w-none">

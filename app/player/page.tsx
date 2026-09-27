@@ -7,7 +7,7 @@ import type { Book } from "@/components/types";
 export default function PlayerPage() {
   const pathname = usePathname();
   const bookId = pathname.split("/").filter(Boolean).at(-1);
-  const [book, setBook] = useState<Pick<Book, "title" | "author" | "summary"> | null>(null);
+  const [book, setBook] = useState<Pick<Book, "title" | "author" | "summary" | "subscriptionRequired"> | null>(null);
   const [loading, setLoading] = useState(Boolean(bookId && bookId !== "player"));
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(30); // Mock starting percentage
@@ -80,8 +80,17 @@ export default function PlayerPage() {
         </button>
 
         <header className="mb-6 border-b border-gray-100 pb-4">
-          <h1 className="text-3xl font-black text-[#032b41] tracking-tight">{book.title}</h1>
-          <p className="text-gray-500 font-medium text-sm mt-1">Written by {book.author}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-[#032b41] tracking-tight">{book.title}</h1>
+              <p className="text-gray-500 font-medium text-sm mt-1">Written by {book.author}</p>
+            </div>
+            {book.subscriptionRequired && (
+              <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+                premium
+              </span>
+            )}
+          </div>
         </header>
 
         <article className="prose max-w-none">

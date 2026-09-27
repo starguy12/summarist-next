@@ -9,6 +9,7 @@ export interface Book {
   keyIdeas: number;
   type: string;
   status: "selected" | "recommended" | "suggested";
+  subscriptionRequired: boolean;
   summary: string;
   tags: string[];
 }

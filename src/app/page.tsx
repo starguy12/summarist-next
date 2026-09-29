@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/app/firebase";
 import LoginModal from "@/components/LoginModal";
 
 export default function Home() {
@@ -17,7 +19,10 @@ export default function Home() {
   };
 
   // Function called when a user logs out
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    localStorage.removeItem("summarist_guest");
+    localStorage.removeItem("summarist_premium");
+    await signOut(auth);
     setUser(null);
   };
 

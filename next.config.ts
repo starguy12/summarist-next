@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "firebasestorage.googleapis.com",
         pathname: "/v0/b/summaristt.appspot.com/o/**",
       },
+      {
+        protocol: "https",
+        hostname: "summarist.vercel.app",
+        pathname: "/_next/static/media/**",
+      },
     ],
   },
     // I'm keeping my existing routing rewrites intact

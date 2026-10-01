@@ -563,11 +563,8 @@ a {
 .featured-duration-icon svg {
   width: 18px;
   height: 18px;
-  fill: none;
-  stroke: var(--ink);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
+  fill: var(--ink);
+  stroke: none;
 }
 
 .featured-duration {
@@ -763,6 +760,11 @@ a {
   stroke-width: 1.5;
 }
 
+.book-duration-play path {
+  fill: #718087;
+  stroke: none;
+}
+
 .book-rating svg {
   width: 14px;
   height: 14px;
@@ -870,7 +872,127 @@ a {
 }
 
 .player-control-panel {
-  left: 200px;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  padding: 0 40px;
+}
+
+.player-controller-layout {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+}
+
+.player-controller-layout-locked {
+  grid-template-columns: 1fr;
+}
+
+.player-track-identity {
+  display: flex;
+  width: min(100%, 453px);
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  gap: 24px;
+}
+
+.player-controls button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #aebcc3;
+  cursor: pointer;
+}
+
+.player-controls button:hover:not(:disabled) {
+  color: #fff;
+}
+
+.player-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.player-controls button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.player-controls .player-play-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #11d683;
+  color: #032b41;
+}
+
+.player-controls .player-play-button svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.player-progress {
+  width: min(100%, 402px);
+  justify-self: end;
+}
+
+.player-track-cover {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #164156;
+}
+
+.player-track-cover img {
+  object-fit: cover;
+}
+
+.player-track-copy {
+  min-width: 0;
+  text-align: left;
+}
+
+.player-track-copy h4 {
+  overflow: hidden;
+  margin: 0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-track-copy p {
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: #aebcc3;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .book-detail-toolbar {
@@ -1499,7 +1621,44 @@ a {
 
   .player-control-panel {
     left: 0;
+    width: 100%;
+    height: auto;
+    min-height: 116px;
     padding: 12px 16px;
+  }
+
+  .player-controller-layout {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    gap: 10px 12px;
+  }
+
+  .player-controller-layout-locked {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .player-track-identity {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .player-controller-layout-locked .player-track-identity {
+    grid-column: 1;
+  }
+
+  .player-controls {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 12px;
+  }
+
+  .player-progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
   }
 
   .book-detail-toolbar {

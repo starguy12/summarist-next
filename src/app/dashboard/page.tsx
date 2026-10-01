@@ -73,7 +73,7 @@ function BookCard({
           <p className="book-subtitle">{book.subTitle}</p>
           <div className="book-card-meta">
             <span className="book-duration">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3 2" /></svg>
+              <svg className="book-duration-play" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8 6 4-6 4V8Z" /></svg>
               {duration === null ? "00:00" : formatDuration(duration)}
             </span>
             <span className="book-rating">
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                       {selectedDuration !== null && (
                         <div className="featured-duration-wrapper">
                           <span className="featured-duration-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3 2" /></svg>
+                            <svg viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692C4.693 12.702 4 12.323 4 11.692V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393Z" /></svg>
                           </span>
                           <p className="featured-duration">{formatSpokenDuration(selectedDuration)}</p>
                         </div>

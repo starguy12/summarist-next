@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,13 +25,155 @@ function SearchBooksLink({ isAuthenticated }: { isAuthenticated: boolean }) {
   );
 }
 
+function formatPlaybackTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+type PlayerBook = Pick<Book, "title" | "author" | "audioLink" | "imageLink">;
+
+function PlayerTrackIdentity({ book }: { book: PlayerBook }) {
+  return (
+    <div className="player-track-identity">
+      <div className="player-track-cover">
+        <Image src={book.imageLink} alt="" fill sizes="48px" priority />
+      </div>
+      <div className="player-track-copy">
+        <h4>{book.title}</h4>
+        <p>{book.author}</p>
+      </div>
+    </div>
+  );
+}
+
+function PlayerController({
+  book,
+  canPlay,
+  onRequireLogin,
+}: {
+  book: PlayerBook;
+  canPlay: boolean;
+  onRequireLogin: () => void;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
+
+  const togglePlayback = async () => {
+    if (!canPlay) {
+      onRequireLogin();
+      return;
+    }
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      try {
+        setPlaybackError(null);
+        await audio.play();
+      } catch {
+        setIsPlaying(false);
+        setPlaybackError("Audio could not be played. Please try again.");
+      }
+    } else {
+      audio.pause();
+    }
+  };
+
+  const seekTo = (time: number) => {
+    if (!canPlay) {
+      onRequireLogin();
+      return;
+    }
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(time)) return;
+    audio.currentTime = Math.max(0, Math.min(time, duration || time));
+    setCurrentTime(audio.currentTime);
+  };
+
+  return (
+    <footer className="player-control-panel fixed bottom-0 right-0 bg-[#032b41] text-white border-t border-gray-800 z-50">
+      <div className="player-controller-layout">
+        <PlayerTrackIdentity book={book} />
+
+        <div className="player-controls">
+          <button
+            type="button"
+            aria-label="Rewind 10 seconds"
+            onClick={() => seekTo(currentTime - 10)}
+            disabled={canPlay && !duration}
+            className="player-skip-button"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6M20 6l-6 6 6 6" /></svg>
+          </button>
+          <button
+            type="button"
+            aria-label={isPlaying ? "Pause audio" : "Play audio"}
+            onClick={togglePlayback}
+            disabled={canPlay && !book.audioLink}
+            className="player-play-button"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              {isPlaying ? <path d="M7 5h4v14H7zM15 5h4v14h-4z" /> : <path d="M7 4.8a1 1 0 0 1 1.5-.86l10 7.2a1.05 1.05 0 0 1 0 1.72l-10 7.2A1 1 0 0 1 7 19.2V4.8Z" />}
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Forward 10 seconds"
+            onClick={() => seekTo(currentTime + 10)}
+            disabled={canPlay && !duration}
+            className="player-skip-button"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6 6 6-6 6M4 6l6 6-6 6" /></svg>
+          </button>
+        </div>
+
+        <div className="player-progress">
+          <span>{formatPlaybackTime(currentTime)}</span>
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            step="0.1"
+            value={Math.min(currentTime, duration || 0)}
+            disabled={canPlay && !duration}
+            aria-label="Seek audio"
+            onChange={(event) => seekTo(Number(event.target.value))}
+          />
+          <span>{formatPlaybackTime(duration)}</span>
+        </div>
+      </div>
+      {playbackError && <p role="status" className="mt-2 text-center text-xs text-red-200">{playbackError}</p>}
+      <audio
+        ref={audioRef}
+        className="book-metadata-audio"
+        src={book.audioLink}
+        preload="metadata"
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onDurationChange={(event) => setDuration(event.currentTarget.duration)}
+        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+        onError={() => {
+          setIsPlaying(false);
+          setPlaybackError("Audio could not be loaded. Please try again.");
+        }}
+      />
+    </footer>
+  );
+}
+
 export default function PlayerPage() {
   const pathname = usePathname();
   const bookId = pathname.split("/").filter(Boolean).at(-1);
-  const [book, setBook] = useState<Pick<Book, "title" | "author" | "summary" | "subscriptionRequired"> | null>(null);
+  const [book, setBook] = useState<Pick<Book, "title" | "author" | "summary" | "subscriptionRequired" | "audioLink" | "imageLink"> | null>(null);
   const [loading, setLoading] = useState(Boolean(bookId && bookId !== "player"));
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(30); // Mock starting percentage
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -115,6 +257,9 @@ export default function PlayerPage() {
             </section>
           </div>
         </main>
+        {book && (
+          <PlayerController book={book} canPlay={false} onRequireLogin={() => setLoginOpen(true)} />
+        )}
         <LoginModal
           isOpen={loginOpen}
           onClose={() => setLoginOpen(false)}
@@ -178,40 +323,7 @@ export default function PlayerPage() {
         </div>
       </main>
 
-      <footer className="player-control-panel fixed bottom-0 right-0 bg-[#032b41] text-white p-6 border-t border-gray-800 z-50">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <h4 className="font-bold text-sm tracking-tight text-white">{book.title}</h4>
-            <p className="text-xs text-gray-400 mt-0.5">{book.author}</p>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <button type="button" aria-label="Previous chapter" className="text-xl text-gray-400 hover:text-white transition">⏮️</button>
-            <button
-              type="button"
-              aria-label={isPlaying ? "Pause audio" : "Play audio"}
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="w-12 h-12 rounded-full bg-[#11d683] text-[#032b41] text-xl font-bold flex items-center justify-center shadow-md hover:scale-105 transition transform active:scale-95"
-            >
-              {isPlaying ? "⏸️" : "▶️"}
-            </button>
-            <button type="button" aria-label="Next chapter" className="text-xl text-gray-400 hover:text-white transition">⏭️</button>
-          </div>
-
-          <div className="w-full sm:w-64 flex items-center gap-3 text-xs font-mono text-gray-300">
-            <span>0:45</span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progress}
-              onChange={(e) => setProgress(Number(e.target.value))}
-              className="flex-1 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#11d683]"
-            />
-            <span>3:15</span>
-          </div>
-        </div>
-      </footer>
+      <PlayerController book={book} canPlay onRequireLogin={() => setLoginOpen(true)} />
       <LoginModal
         isOpen={loginOpen}
         onClose={() => setLoginOpen(false)}
